@@ -26,10 +26,10 @@ Applications"*, Information 2020.
 | Cleaning / smoothing | Causal 0.5–40 Hz Butterworth band-pass, with filter state carried across messages |
 | Reduction | 2 leads → 1; 250 samples → 1 heart-rate value |
 | Transformation / discretization | HR → `brady` (<60) / `normal` / `tachy` (>100); an alert needs 5 s of a stable abnormal class |
-| **Veracity** | The detector is scored against the cardiologists' beat annotations (Se / PPV, shown in the UI) |
+| **Veracity** | The detector is scored against the cardiologists' beat annotations (Se / PPV, printed by `ingest_batch` and stored in `patients.quality`) |
 | Operational DB (document NoSQL) | MongoDB, bucket pattern: 1 document = 1 patient × 1 s; unique index `(patient_id, t)` |
-| Analytics (descriptive) | MongoDB aggregation pipelines: HR trend in 10-s buckets, time spent in each class |
-| Reporting & visualization | `dashboard.py` (Streamlit + Plotly), which reads only from MongoDB |
+| Analytics (descriptive) | MongoDB aggregation pipeline: HR trend in 10-s buckets |
+| Reporting & visualization | `dashboard.py`: pipeline status, patient tiles, live ECG, HR trend. It reads only from MongoDB |
 
 **Delivery guarantee.** The consumer commits Kafka offsets only *after* the MongoDB write (at-least-once). A re-delivered message
 upserts its own `(patient_id, t)` document, so the stored result is exactly-once. This is tested by replaying the whole topic.
