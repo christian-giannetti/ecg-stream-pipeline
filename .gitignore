@@ -1,0 +1,7 @@
+# course slides (not ours to redistribute) and downloaded data
+slides/
+data/
+# runtime / tooling
+__pycache__/
+.pytest_cache/
+.DS_Store

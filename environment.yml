@@ -1,0 +1,19 @@
+name: ecgpipe
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  # infrastructure (Kafka itself is not on conda-forge: scripts/setup.sh unpacks it into the env)
+  - mongodb=8.0
+  - openjdk=17
+  # pipeline
+  - numpy
+  - scipy
+  - pandas
+  - wfdb
+  - pymongo
+  - python-confluent-kafka
+  # demo UI + tests
+  - streamlit
+  - plotly
+  - pytest
