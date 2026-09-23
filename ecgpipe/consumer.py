@@ -28,9 +28,17 @@ class Patient:
     """Everything the consumer remembers about one patient between messages."""
 
     def __init__(self, fs, profile):
-        self.stream = PatientStream(fs)
+        self.fs, self.stream, self.next_t = fs, PatientStream(fs), None
         self.profile = {k: profile.get(k) for k in ("age", "sex")}
         self.state, self.candidate, self.run = "unknown", None, 0
+
+    def push(self, samples, t):
+        """Feed one window. A jump in time (device restarted, stream replayed) starts a fresh session,
+        otherwise the filter and beat state of the old session would corrupt the new one."""
+        if t != self.next_t:
+            self.stream = PatientStream(self.fs)
+        self.next_t = t + 1
+        return self.stream.push(samples, t * self.fs)
 
     def alert(self, hr_class):
         """Hysteresis: report a new abnormal state only once it has been stable for ALERT_AFTER_S."""
@@ -44,7 +52,7 @@ class Patient:
 def to_documents(msg, patient):
     lead = next(iter(msg["signal"]))
     fs, t = msg["fs"], msg["t"]
-    res = patient.stream.push(msg["signal"][lead], t * fs)
+    res = patient.push(msg["signal"][lead], t)
     now = time.time()
     window = {
         "patient_id": msg["patient_id"], "t": t, "lead": lead, "fs": fs,

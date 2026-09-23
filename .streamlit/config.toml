@@ -7,3 +7,24 @@ gatherUsageStats = false
 
 [client]
 toolbarMode = "minimal"
+
+[theme]
+base = "dark"
+primaryColor = "#3987e5"
+backgroundColor = "#0b0c10"
+secondaryBackgroundColor = "#16181e"
+textColor = "#e8e7e2"
+borderColor = "#262a33"
+showWidgetBorder = true
+baseRadius = "16px"
+buttonRadius = "full"
+font = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+headingFontSizes = ["36px", "26px", "20px", "16px", "14px", "12px"]
+headingFontWeights = [700, 650, 650, 600, 600, 600]
+# status palette: normal / bradycardia / tachycardia, each always paired with an icon and a label
+greenColor = "#0ca30c"
+orangeColor = "#fab219"
+redColor = "#d03b3b"
+blueColor = "#3987e5"
+grayColor = "#8a8984"
+chartCategoricalColors = ["#3987e5", "#d95926", "#199e70", "#c98500", "#d55181"]

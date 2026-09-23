@@ -8,6 +8,9 @@
 set -eo pipefail
 cd "$(dirname "$0")/.."
 SPEED="${1:-2}"
+if nc -z localhost 8501 2>/dev/null; then  # never tear down services another demo is using
+  echo "A dashboard is already running on http://localhost:8501 (another demo?). Stop it first."; exit 1
+fi
 
 eval "$("${CONDA_EXE:-conda}" shell.bash hook)"
 conda activate ecgpipe
