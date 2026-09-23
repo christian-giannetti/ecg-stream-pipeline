@@ -8,11 +8,13 @@ RUN="$CONDA_PREFIX/var/ecgpipe"
 KAFKA="$CONDA_PREFIX/opt/kafka"
 
 wait_port() { for _ in $(seq 60); do nc -z localhost "$1" 2>/dev/null && return 0; sleep 1; done; echo "port $1 not up"; exit 1; }
+wait_closed() { for _ in $(seq 60); do nc -z localhost "$1" 2>/dev/null || return 0; sleep 1; done; }
 
 start() {
   mkdir -p "$RUN/mongo" "$RUN/kafka"
   if ! nc -z localhost 27017 2>/dev/null; then
-    mongod --dbpath "$RUN/mongo" --bind_ip 127.0.0.1 --port 27017 --fork --logpath "$RUN/mongod.log" >/dev/null
+    mongod --dbpath "$RUN/mongo" --bind_ip 127.0.0.1 --port 27017 --fork --logpath "$RUN/mongod.log" \
+      --pidfilepath "$RUN/mongod.pid" >/dev/null
   fi
   wait_port 27017 && echo "MongoDB  up  (localhost:27017)"
 
@@ -29,9 +31,9 @@ start() {
 }
 
 stop() {
-  "$KAFKA/bin/kafka-server-stop.sh" 2>/dev/null || true
-  mongod --dbpath "$RUN/mongo" --shutdown >/dev/null 2>&1 || true
-  echo "services stopped"
+  "$KAFKA/bin/kafka-server-stop.sh" >/dev/null 2>&1 || true
+  [ -f "$RUN/mongod.pid" ] && kill "$(cat "$RUN/mongod.pid")" 2>/dev/null || true  # SIGTERM = clean shutdown
+  wait_closed 9092 && wait_closed 27017 && echo "services stopped"
 }
 
 status() {

@@ -45,6 +45,14 @@ conda activate ecgpipe
 
 ## Demo
 
+One command runs everything and opens the dashboard in the browser. Ctrl+C stops it all:
+
+```bash
+scripts/demo.sh        # default 2x real time; e.g. scripts/demo.sh 1 for true real time, scripts/demo.sh 10 to stress it
+```
+
+Or step by step:
+
 ```bash
 scripts/services.sh start                   # MongoDB :27017 + Kafka (KRaft) :9092
 python -m ecgpipe.ingest_batch --reset      # batch: download 5 records (~26 MB), load patients, veracity check;
@@ -83,7 +91,7 @@ ecgpipe/ingest_batch.py  batch ingestion
 ecgpipe/producer.py      real-time ingestion (simulated devices)
 ecgpipe/consumer.py      stream processing and storage
 dashboard.py             demo UI
-scripts/                 setup.sh, services.sh
+scripts/                 setup.sh, services.sh, demo.sh
 ```
 
 ## Data
