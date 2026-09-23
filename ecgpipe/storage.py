@@ -5,7 +5,7 @@ Collections
   ecg_windows  bucket pattern: one document = one patient x one second of cleaned ECG + derived HR
   alerts       sustained brady/tachycardia episodes detected on the stream
 """
-from pymongo import ASCENDING, MongoClient
+from pymongo import ASCENDING, DESCENDING, MongoClient
 
 from . import config
 
@@ -18,5 +18,6 @@ def ensure_indexes(db):
     # Serves the most frequent query ("latest windows of patient X") and makes stream writes
     # idempotent: a message re-delivered by Kafka overwrites its own window instead of duplicating it.
     db.ecg_windows.create_index([("patient_id", ASCENDING), ("t", ASCENDING)], unique=True)
+    db.ecg_windows.create_index([("patient_id", ASCENDING), ("ts", DESCENDING)])  # "latest" = last ingested
     db.ecg_windows.create_index("ts")
     db.alerts.create_index([("patient_id", ASCENDING), ("t", ASCENDING)], unique=True)

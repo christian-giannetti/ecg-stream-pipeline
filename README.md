@@ -47,17 +47,18 @@ conda activate ecgpipe
 
 ```bash
 scripts/services.sh start                   # MongoDB :27017 + Kafka (KRaft) :9092
-python -m ecgpipe.ingest_batch              # batch: download 5 records (~26 MB), load patients, veracity check
+python -m ecgpipe.ingest_batch --reset      # batch: download 5 records (~26 MB), load patients, veracity check;
+                                            #   --reset clears previously streamed data for a fresh demo
 python -m ecgpipe.consumer                  # terminal 1: stream processor
-python -m ecgpipe.producer --speed 5        # terminal 2: 5 wearables, 5x real time
-streamlit run dashboard.py                  # terminal 3: http://localhost:8501
+streamlit run dashboard.py                  # terminal 2: http://localhost:8501
+python -m ecgpipe.producer --speed 1        # terminal 3: 5 wearables in real time (1 msg/s each)
 ```
 
 Things to show during the demo:
-- **Velocity.** Restart the producer with `--speed 20`. The ingest rate goes up 4× and the pipeline keeps up.
+- **Velocity.** Restart the producer with `--speed 20`. The ingest rate goes up 20× and the pipeline keeps up.
 - **Fault tolerance.** Stop the consumer (Ctrl+C) while the producer keeps running, then start it again. Kafka kept the messages,
   and the consumer resumes from its last committed offset with no gaps. If you kill it hard (`kill -9`), Kafka first waits for
-  the 45-s session timeout before it reassigns the partitions (failure detection).
+  the 10-s session timeout before it reassigns the partitions (failure detection).
 - **Value.** Most of these patients are on verapamil/diltiazem, drugs that slow the heart, and the stream flags their
   sustained bradycardia.
 

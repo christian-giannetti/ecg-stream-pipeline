@@ -10,6 +10,7 @@ Kafka offsets are committed only after the write succeeds (at-least-once), and t
 """
 import argparse
 import json
+import signal
 import time
 from datetime import datetime, timezone
 
@@ -66,7 +67,8 @@ def run(topic=config.KAFKA_TOPIC, group=config.KAFKA_GROUP, db=None, idle_timeou
     db = db if db is not None else get_db()
     ensure_indexes(db)
     consumer = Consumer({"bootstrap.servers": config.KAFKA_BOOTSTRAP, "group.id": group,
-                         "auto.offset.reset": "earliest", "enable.auto.commit": False})
+                         "auto.offset.reset": "earliest", "enable.auto.commit": False,
+                         "session.timeout.ms": 10000})  # a crashed consumer is replaced after 10 s
     patients, stored, last_msg = {}, 0, float("inf")  # idle clock starts once partitions are assigned
 
     def on_assign(c, partitions):
@@ -105,5 +107,6 @@ def run(topic=config.KAFKA_TOPIC, group=config.KAFKA_GROUP, db=None, idle_timeou
 
 
 if __name__ == "__main__":
+    signal.signal(signal.SIGTERM, signal.default_int_handler)  # `kill` = Ctrl+C: leave the group cleanly
     argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter).parse_args()
     run()

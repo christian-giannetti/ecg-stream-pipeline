@@ -1,7 +1,7 @@
 """Batch ingestion: download the records, turn the WFDB headers into patient documents and
 attach a veracity report (our beat detector vs. the cardiologists' annotations).
 
-    python -m ecgpipe.ingest_batch [--check-minutes 10]
+    python -m ecgpipe.ingest_batch [--check-minutes 10] [--reset]
 """
 import argparse
 
@@ -24,8 +24,11 @@ def veracity(record_id, minutes):
     return {"minutes": minutes, "sensitivity": round(sensitivity, 4), "ppv": round(ppv, 4)}
 
 
-def run(records=config.RECORDS, check_minutes=10, db=None):
+def run(records=config.RECORDS, check_minutes=10, reset=False, db=None):
     db = db if db is not None else get_db()
+    if reset:  # fresh demo: forget previously streamed windows and alerts
+        db.ecg_windows.drop()
+        db.alerts.drop()
     ensure_indexes(db)
     dataset.download(records)
     for rid in records:
@@ -41,4 +44,6 @@ def run(records=config.RECORDS, check_minutes=10, db=None):
 if __name__ == "__main__":
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--check-minutes", type=float, default=10, help="minutes per record used for the veracity check")
-    run(check_minutes=p.parse_args().check_minutes)
+    p.add_argument("--reset", action="store_true", help="also clear the streamed windows and alerts")
+    a = p.parse_args()
+    run(check_minutes=a.check_minutes, reset=a.reset)
