@@ -13,7 +13,11 @@ if nc -z localhost 8501 2>/dev/null; then  # never tear down services another de
 fi
 
 eval "$("${CONDA_EXE:-conda}" shell.bash hook)"
-conda activate ecgpipe
+# first run on a new machine: create the env and fetch Kafka (setup.sh skips whatever is already there)
+if ! conda activate ecgpipe 2>/dev/null || [ ! -x "$CONDA_PREFIX/opt/kafka/bin/kafka-server-start.sh" ]; then
+  scripts/setup.sh
+  conda activate ecgpipe
+fi
 LOGS="$CONDA_PREFIX/var/ecgpipe/demo-logs"
 mkdir -p "$LOGS"
 
